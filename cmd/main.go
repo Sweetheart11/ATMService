@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Sweetheart11/ATMService/internal/config"
+	"github.com/Sweetheart11/ATMService/internal/storage/sliceStorage"
 )
 
 const (
@@ -19,10 +20,17 @@ func main() {
 	log := setupLogger(cfg.Env)
 
 	log.Info(
-		"starting time tracker service",
+		"starting ATM service",
 		slog.String("env", cfg.Env),
 	)
 	log.Debug("debug messages are enabled")
+
+	storage, err := sliceStorage.New()
+	// error handling for a more complex implementation
+	if err != nil {
+		log.Error("failed initializing storage", slog.StringValue(err.Error()))
+		os.Exit(1)
+	}
 
 }
 
