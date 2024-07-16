@@ -36,3 +36,27 @@ func (s *Storage) CreateAccount(username string) (int, error) {
 
 	return len(*s) - 1, nil
 }
+
+func (s *Storage) DepositToAccount(id int, amount float64) (float64, error) {
+	acc := (*s)[id]
+
+	if err := acc.Deposit(amount); err != nil {
+		return acc.GetBalance(), err
+	}
+
+	return acc.GetBalance(), nil
+}
+
+func (s *Storage) GetAccountBalance(id int) (float64, error) {
+	acc := (*s)[id]
+	return acc.GetBalance(), nil
+}
+
+func (s *Storage) WithdrawFromAccount(id int, amount float64) (float64, error) {
+	acc := (*s)[id]
+	if err := acc.Withdraw(amount); err != nil {
+		return acc.GetBalance(), err
+	}
+
+	return acc.GetBalance(), nil
+}

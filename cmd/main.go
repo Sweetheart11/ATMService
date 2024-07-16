@@ -11,7 +11,10 @@ import (
 	"golang.org/x/exp/slog"
 
 	"github.com/Sweetheart11/ATMService/internal/config"
+	"github.com/Sweetheart11/ATMService/internal/http-server/handlers/urls/balance"
 	"github.com/Sweetheart11/ATMService/internal/http-server/handlers/urls/create"
+	"github.com/Sweetheart11/ATMService/internal/http-server/handlers/urls/deposit"
+	"github.com/Sweetheart11/ATMService/internal/http-server/handlers/urls/withdraw"
 	"github.com/Sweetheart11/ATMService/internal/storage/sliceStorage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -48,6 +51,9 @@ func main() {
 	router.Use(middleware.Logger)
 
 	router.Post("/accounts", create.New(log, &storage))
+	router.Post("/accounts/{id}/deposit", deposit.New(log, &storage))
+	router.Post("/accounts/{id}/withdraw", withdraw.New(log, &storage))
+	router.Get("/accounts/{id}/balance", balance.New(log, &storage))
 
 	log.Info("starting server", slog.String("address", cfg.Address))
 
