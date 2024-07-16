@@ -89,7 +89,7 @@ func New(log *slog.Logger, depositMaker DepositMaker) http.HandlerFunc {
 
 		res := <-ch
 
-		log.Info("new deposit", slog.String("deposit", fmt.Sprintf("%f", amount)))
+		log.Info("new deposit", slog.String("deposit", fmt.Sprintf("%f", amount)), slog.String("new balance", fmt.Sprintf("%f", res)))
 
 		responseOK(w, r, fmt.Sprintf("made deposit %f to account %d. new balance: %f", amount, userID, res))
 	}

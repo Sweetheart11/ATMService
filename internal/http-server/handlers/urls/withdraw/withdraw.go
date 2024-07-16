@@ -89,7 +89,7 @@ func New(log *slog.Logger, withdrawMaker WithdrawMaker) http.HandlerFunc {
 
 		res := <-ch
 
-		log.Info("new withdrawal", slog.String("amount", fmt.Sprintf("%f", amount)))
+		log.Info("new withdrawal", slog.String("amount", fmt.Sprintf("%f", amount)), slog.String("new balance", fmt.Sprintf("%f", res)))
 
 		responseOK(w, r, fmt.Sprintf("withdrawn %f from account %d. new balance: %f", amount, userID, res))
 	}

@@ -79,7 +79,6 @@ func main() {
 	<-done
 	log.Info("stopping server")
 
-	// TODO: move timeout to config
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -88,8 +87,6 @@ func main() {
 
 		return
 	}
-
-	// TODO: close storage
 
 	log.Info("server stopped")
 }
