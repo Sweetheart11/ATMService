@@ -1,11 +1,20 @@
 package main
 
 import (
-	"log/slog"
+	"context"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"golang.org/x/exp/slog"
 
 	"github.com/Sweetheart11/ATMService/internal/config"
+	"github.com/Sweetheart11/ATMService/internal/http-server/handlers/urls/create"
 	"github.com/Sweetheart11/ATMService/internal/storage/sliceStorage"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -32,6 +41,51 @@ func main() {
 		os.Exit(1)
 	}
 
+	router := chi.NewRouter()
+
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+
+	router.Post("/accounts", create.New(log, &storage))
+
+	log.Info("starting server", slog.String("address", cfg.Address))
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	srv := &http.Server{
+		Addr:         cfg.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server")
+		}
+	}()
+
+	log.Info("server started")
+
+	<-done
+	log.Info("stopping server")
+
+	// TODO: move timeout to config
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Error("failed to stop server", slog.StringValue(err.Error()))
+
+		return
+	}
+
+	// TODO: close storage
+
+	log.Info("server stopped")
 }
 
 func setupLogger(env string) *slog.Logger {

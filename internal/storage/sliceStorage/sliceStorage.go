@@ -1,11 +1,13 @@
 package sliceStorage
 
 import (
-	"github.com/Sweetheart11/ATMService/internal/models"
+	"fmt"
+
+	"github.com/Sweetheart11/ATMService/internal/model"
 	"github.com/Sweetheart11/ATMService/internal/storage"
 )
 
-type SliceStorage []BankAccount
+type Storage []BankAccount
 
 type BankAccount interface {
 	Deposit(amount float64) error
@@ -13,22 +15,24 @@ type BankAccount interface {
 	GetBalance() float64
 }
 
-func New() (SliceStorage, error) {
-	var sliceStorage SliceStorage
-	return sliceStorage, nil
+func New() (Storage, error) {
+	var storage Storage
+	return storage, nil
 }
 
-func (s *SliceStorage) CreateAccount(username string) error {
+func (s *Storage) CreateAccount(username string) (int, error) {
+	const op = "storage.sliceStorage.CreateAccount"
+
 	for _, bankAcc := range *s {
-		acc := bankAcc.(*models.Account)
+		acc := bankAcc.(*model.Account)
 		if acc.Username == username {
-			return storage.ErrUserExists
+			return 0, fmt.Errorf("%s: %w", op, storage.ErrUserExists)
 		}
 	}
 
-	*s = append(*s, &models.Account{
+	*s = append(*s, &model.Account{
 		Username: username,
 	})
 
-	return nil
+	return len(*s) - 1, nil
 }
